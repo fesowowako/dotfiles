@@ -1,0 +1,12 @@
+#!/bin/sh
+
+xrdb ${XDG_CONFIG_HOME:-$HOME/.config}/x11/xresources && duskc run_command xrdb
+setxkbmap -layout us,ara -variant ,digits -option grp:sclk_toggle caps:escape &
+xset r rate 300 50 &
+setbg &
+
+autostart="/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+
+for program in $autostart; do
+  pidof -sx "$program" || "$program" &
+done >/dev/null 2>&1

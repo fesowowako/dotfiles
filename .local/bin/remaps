@@ -1,0 +1,4 @@
+#!/bin/sh
+
+xset r rate 300 50
+setxkbmap -layout us,ara -variant ,digits -option grp:sclk_toggle caps:escape

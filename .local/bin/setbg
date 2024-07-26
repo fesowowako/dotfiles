@@ -1,0 +1,42 @@
+#!/bin/dash
+# Sets the background. If given a file, set that as the new wallpaper.
+
+bg_dir="${XDG_DATA_HOME:-$HOME/.local/share/wall}"
+bg="$bg_dir/bg"
+img=${1:-}
+
+if [ -e "$img" ]; then
+  # set the new wallpaper
+  img=$(readlink -f "$img")
+  case "$(file --mime-type -b "$img")" in
+  image/*) ln -srf "$img" "$bg" ;;
+  *)
+    echo "$(basename "$0"): '$img' is not a valid image" 1>&2
+    exit 1
+    ;;
+  esac
+elif [ "$img" = '--clear' ]; then
+  # initializes screen with a black background (1x1 black pixel png)
+  tmp="$(mktemp ${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/XXXXXXXXXX.png)"
+  printf '\211\120\116\107\015\012\032\012\000\000\000\015\111\110' >>"$tmp"
+  printf '\104\122\000\000\000\001\000\000\000\001\010\006\000\000' >>"$tmp"
+  printf '\000\037\025\304\211\000\000\000\015\111\104\101\124\010' >>"$tmp"
+  printf '\327\143\140\140\140\370\017\000\001\004\001\000\244\340' >>"$tmp"
+  printf '\254\061\000\000\000\000\111\105\116\104\256\102\140\202' >>"$tmp"
+  bg=$tmp
+elif [ -n "$img" ]; then
+  echo "$(basename "$0"): '$img' does not exist" 1>&2
+  exit 1
+fi
+
+# Ensure that the bg file exists before calling feh
+if [ ! -e "$bg" ]; then
+  echo "$(basename "$0"): '$bg' does not exist" 1>&2
+  exit 1
+fi
+
+# Set the background using feh
+feh --no-fehbg --bg-fill "$bg" || exit 1
+
+# Clean up temporary file if it was created
+[ -z "${tmp:-}" ] || rm -f "$tmp"
